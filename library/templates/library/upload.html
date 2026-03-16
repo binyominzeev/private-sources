@@ -1,0 +1,155 @@
+{% extends "library/base.html" %}
+
+{% block title %}Upload Section{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'library:index' %}">Library</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Upload Section</li>
+  </ol>
+</nav>
+
+<div class="row justify-content-center">
+  <div class="col-lg-9">
+    <div class="card shadow-sm">
+      <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">Upload Section from ChatGPT Output</h4>
+      </div>
+      <div class="card-body">
+        <p class="text-muted small mb-4">
+          Paste the ChatGPT-generated bilingual text below.
+          Each paragraph must start with a number followed by a period on its own line,
+          then an <strong>עברית:</strong> block and an <strong>English:</strong> block.
+        </p>
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+              {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+            </div>
+          {% endif %}
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold" for="{{ form.category.id_for_label }}">
+                Category
+              </label>
+              {{ form.category }}
+              {% if form.category.errors %}
+                <div class="text-danger small">{{ form.category.errors.0 }}</div>
+              {% endif %}
+              <div class="form-text">{{ form.category.help_text }}</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold" for="{{ form.work.id_for_label }}">
+                Work
+              </label>
+              {{ form.work }}
+              {% if form.work.errors %}
+                <div class="text-danger small">{{ form.work.errors.0 }}</div>
+              {% endif %}
+              <div class="form-text">{{ form.work.help_text }}</div>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold" for="{{ form.reference.id_for_label }}">
+                Reference
+              </label>
+              {{ form.reference }}
+              {% if form.reference.errors %}
+                <div class="text-danger small">{{ form.reference.errors.0 }}</div>
+              {% endif %}
+              <div class="form-text">{{ form.reference.help_text }}</div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label fw-semibold" for="{{ form.slug.id_for_label }}">
+                Slug
+              </label>
+              {{ form.slug }}
+              {% if form.slug.errors %}
+                <div class="text-danger small">{{ form.slug.errors.0 }}</div>
+              {% endif %}
+              <div class="form-text">{{ form.slug.help_text }}</div>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label fw-semibold" for="{{ form.order.id_for_label }}">
+                Order
+              </label>
+              {{ form.order }}
+              {% if form.order.errors %}
+                <div class="text-danger small">{{ form.order.errors.0 }}</div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="{{ form.title.id_for_label }}">
+              Title <span class="text-muted fw-normal">(optional)</span>
+            </label>
+            {{ form.title }}
+            {% if form.title.errors %}
+              <div class="text-danger small">{{ form.title.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="{{ form.content.id_for_label }}">
+              ChatGPT Output
+            </label>
+            <textarea
+              name="{{ form.content.html_name }}"
+              id="{{ form.content.id_for_label }}"
+              class="form-control font-monospace {% if form.content.errors %}is-invalid{% endif %}"
+              rows="28"
+              placeholder="1.
+
+עברית:
+Hebrew paragraph text here.
+
+English:
+English paragraph text here.
+
+2.
+
+עברית:
+..."
+            >{{ form.content.value|default:'' }}</textarea>
+            {% if form.content.errors %}
+              <div class="text-danger small">{{ form.content.errors.0 }}</div>
+            {% endif %}
+            <div class="form-text">{{ form.content.help_text }}</div>
+          </div>
+
+          <div class="mb-4 form-check">
+            {{ form.replace_existing }}
+            <label class="form-check-label" for="{{ form.replace_existing.id_for_label }}">
+              Replace existing paragraphs
+            </label>
+            <div class="form-text">{{ form.replace_existing.help_text }}</div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-lg">
+            Upload &amp; Parse
+          </button>
+          <a href="{% url 'library:index' %}" class="btn btn-outline-secondary btn-lg ms-2">
+            Cancel
+          </a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+  select.form-select, input.form-control, textarea.form-control {
+    border-radius: 0.375rem;
+  }
+</style>
+{% endblock %}

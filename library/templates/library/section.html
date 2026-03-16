@@ -1,0 +1,76 @@
+{% extends "library/base.html" %}
+
+{% block title %}{{ section.reference }} – {{ work.name }}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'library:index' %}">Library</a></li>
+    <li class="breadcrumb-item">
+      <a href="{{ category.get_absolute_url }}">{{ category.name }}</a>
+    </li>
+    <li class="breadcrumb-item">
+      <a href="{{ work.get_absolute_url }}">{{ work.name }}</a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">{{ section.reference }}</li>
+  </ol>
+</nav>
+
+<div class="d-flex align-items-baseline justify-content-between mb-1">
+  <h1 class="mb-0">
+    {{ work.name }}
+    <span class="text-muted fw-normal fs-4">— {{ section.reference }}</span>
+  </h1>
+</div>
+{% if section.title %}
+  <p class="text-muted mb-4">{{ section.title }}</p>
+{% else %}
+  <div class="mb-4"></div>
+{% endif %}
+
+{% if paragraphs %}
+  {% for para in paragraphs %}
+  <div class="card paragraph-card mb-4 shadow-sm">
+    <div class="card-body">
+      <div class="paragraph-number mb-3">{{ para.number }}.</div>
+      <div class="row">
+        <div class="col-md-6 hebrew-col border-end pe-4">
+          <p class="small text-muted fw-semibold mb-1">עברית</p>
+          <div class="hebrew-text">{{ para.hebrew_text }}</div>
+        </div>
+        <div class="col-md-6 english-col ps-md-4 mt-3 mt-md-0">
+          <p class="small text-muted fw-semibold mb-1">English</p>
+          <div class="english-text">{{ para.english_text }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+{% else %}
+  <p class="text-muted">No paragraphs in this section.</p>
+{% endif %}
+
+<!-- Prev / Next navigation -->
+{% if prev_section or next_section %}
+<nav class="d-flex justify-content-between mt-4" aria-label="Section navigation">
+  <div>
+    {% if prev_section %}
+    <a href="{{ prev_section.get_absolute_url }}" class="btn btn-outline-secondary">
+      ← {{ prev_section.reference }}
+    </a>
+    {% endif %}
+  </div>
+  <div>
+    {% if next_section %}
+    <a href="{{ next_section.get_absolute_url }}" class="btn btn-outline-secondary">
+      {{ next_section.reference }} →
+    </a>
+    {% endif %}
+  </div>
+</nav>
+{% endif %}
+
+{% if user.is_authenticated %}
+  <a href="{% url 'library:upload' %}" class="btn btn-primary upload-btn shadow">⬆ Upload</a>
+{% endif %}
+{% endblock %}

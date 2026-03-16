@@ -1,0 +1,53 @@
+{% extends "library/base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-sm-8 col-md-5 col-lg-4">
+    <div class="card shadow-sm mt-4">
+      <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">Admin Login</h4>
+      </div>
+      <div class="card-body">
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+              {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+            </div>
+          {% endif %}
+          <div class="mb-3">
+            <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+            <input
+              type="text"
+              name="{{ form.username.html_name }}"
+              id="{{ form.username.id_for_label }}"
+              class="form-control {% if form.username.errors %}is-invalid{% endif %}"
+              autofocus
+              value="{{ form.username.value|default:'' }}"
+            />
+            {% if form.username.errors %}
+              <div class="invalid-feedback">{{ form.username.errors.0 }}</div>
+            {% endif %}
+          </div>
+          <div class="mb-4">
+            <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
+            <input
+              type="password"
+              name="{{ form.password.html_name }}"
+              id="{{ form.password.id_for_label }}"
+              class="form-control {% if form.password.errors %}is-invalid{% endif %}"
+            />
+            {% if form.password.errors %}
+              <div class="invalid-feedback">{{ form.password.errors.0 }}</div>
+            {% endif %}
+          </div>
+          <input type="hidden" name="next" value="{{ next }}" />
+          <button type="submit" class="btn btn-primary w-100">Login</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
