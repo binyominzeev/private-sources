@@ -30,9 +30,9 @@
 
 {% if paragraphs %}
   {% for para in paragraphs %}
-  <div class="card paragraph-card mb-4 shadow-sm">
+  <div class="card paragraph-card mb-4 shadow-sm" id="par_{{ para.number }}">
     <div class="card-body">
-      <div class="paragraph-number mb-3">{{ para.number }}.</div>
+      <a href="#par_{{ para.number }}" class="paragraph-number mb-3 d-block text-decoration-none">{{ para.number }}.</a>
       <div class="row">
         <div class="col-md-6 hebrew-col border-end pe-4">
           <p class="small text-muted fw-semibold mb-1">עברית</p>
