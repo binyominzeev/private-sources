@@ -46,8 +46,8 @@
   </div>
 {% else %}
   <p class="text-muted">No sections uploaded yet.</p>
-  {% if user.is_authenticated %}
-    <a href="{% url 'library:upload' %}" class="btn btn-primary mt-2">Upload a Section</a>
-  {% endif %}
+{% endif %}
+{% if user.is_authenticated %}
+  <a href="{% url 'library:upload' %}?category={{ work.category.pk }}&work={{ work.pk }}" class="btn btn-primary mt-2">Upload a Section</a>
 {% endif %}
 {% endblock %}

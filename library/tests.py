@@ -23,6 +23,21 @@ English:
 However, here it says "roasted with fire and unleavened bread."
 """
 
+# Same content without the leading "1." / "2." paragraph-number headers,
+# simulating ChatGPT output that uses an HTML numbered list (lost on paste).
+SAMPLE_OUTPUT_UNNUMBERED = """עברית:
+צלי אש ומצות על מרורים.
+
+English:
+"Roasted with fire and unleavened bread, with bitter herbs."
+
+עברית:
+משא\"כ כאן כתיב צלי אש ומצות.
+
+English:
+However, here it says "roasted with fire and unleavened bread."
+"""
+
 
 class ParserTests(TestCase):
     def test_parses_two_paragraphs(self):
@@ -49,6 +64,25 @@ class ParserTests(TestCase):
         bad = "1.\n\nEnglish:\nOnly English here.\n"
         results = parse_chatgpt_output(bad)
         self.assertEqual(results, [])
+
+    # ── Unnumbered fallback ────────────────────────────────────────────────
+
+    def test_unnumbered_parses_two_paragraphs(self):
+        results = parse_chatgpt_output(SAMPLE_OUTPUT_UNNUMBERED)
+        self.assertEqual(len(results), 2)
+
+    def test_unnumbered_sequential_numbers(self):
+        results = parse_chatgpt_output(SAMPLE_OUTPUT_UNNUMBERED)
+        self.assertEqual(results[0]['number'], 1)
+        self.assertEqual(results[1]['number'], 2)
+
+    def test_unnumbered_hebrew_content(self):
+        results = parse_chatgpt_output(SAMPLE_OUTPUT_UNNUMBERED)
+        self.assertIn('צלי אש', results[0]['hebrew'])
+
+    def test_unnumbered_english_content(self):
+        results = parse_chatgpt_output(SAMPLE_OUTPUT_UNNUMBERED)
+        self.assertIn('Roasted with fire', results[0]['english'])
 
 
 class ViewTests(TestCase):
@@ -111,6 +145,18 @@ class ViewTests(TestCase):
         resp = self.client.get(reverse('library:upload'))
         self.assertEqual(resp.status_code, 200)
 
+    def test_upload_prepopulates_category_and_work(self):
+        """Query-string params should pre-select category and work in the form."""
+        self.client.login(username='admin', password='pass')
+        url = (
+            reverse('library:upload')
+            + f'?category={self.category.pk}&work={self.work.pk}'
+        )
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        # The selected option for the work should be rendered as "selected".
+        self.assertContains(resp, f'value="{self.work.pk}" selected')
+
     def test_upload_creates_paragraphs(self):
         self.client.login(username='admin', password='pass')
         resp = self.client.post(reverse('library:upload'), {
@@ -125,6 +171,23 @@ class ViewTests(TestCase):
         })
         self.assertEqual(resp.status_code, 302)
         section = Section.objects.get(work=self.work, slug='exodus-12-9')
+        self.assertEqual(section.paragraphs.count(), 2)
+
+    def test_upload_creates_paragraphs_unnumbered(self):
+        """Upload should succeed with unnumbered ChatGPT output."""
+        self.client.login(username='admin', password='pass')
+        resp = self.client.post(reverse('library:upload'), {
+            'category': self.category.pk,
+            'work': self.work.pk,
+            'reference': 'Exodus 12:10',
+            'slug': 'exodus-12-10',
+            'order': 2,
+            'title': '',
+            'content': SAMPLE_OUTPUT_UNNUMBERED,
+            'replace_existing': False,
+        })
+        self.assertEqual(resp.status_code, 302)
+        section = Section.objects.get(work=self.work, slug='exodus-12-10')
         self.assertEqual(section.paragraphs.count(), 2)
 
     def test_upload_replace_existing(self):
@@ -152,3 +215,16 @@ class ViewTests(TestCase):
         self.assertIn('tanakh-commentaries', url)
         self.assertIn('haamek-davar', url)
         self.assertIn('exodus-12-8', url)
+
+    def test_work_upload_link_contains_params(self):
+        """Work page upload link should contain category and work pk params."""
+        self.client.login(username='admin', password='pass')
+        resp = self.client.get(reverse('library:work', kwargs={
+            'category_slug': 'tanakh-commentaries',
+            'work_slug': 'haamek-davar',
+        }))
+        self.assertEqual(resp.status_code, 200)
+        expected_fragment = (
+            f'upload/?category={self.category.pk}&work={self.work.pk}'
+        )
+        self.assertContains(resp, expected_fragment)

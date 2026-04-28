@@ -105,6 +105,11 @@ def upload_section(request):
                 )
                 return redirect(section.get_absolute_url())
     else:
-        form = SectionUploadForm()
+        initial = {}
+        if 'category' in request.GET:
+            initial['category'] = request.GET['category']
+        if 'work' in request.GET:
+            initial['work'] = request.GET['work']
+        form = SectionUploadForm(initial=initial)
 
     return render(request, 'library/upload.html', {'form': form})
