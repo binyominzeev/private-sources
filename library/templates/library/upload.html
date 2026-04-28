@@ -153,3 +153,46 @@ English paragraph text here.
   }
 </style>
 {% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+  const referenceInput = document.getElementById('{{ form.reference.id_for_label }}');
+  const slugInput = document.getElementById('{{ form.slug.id_for_label }}');
+  if (!referenceInput || !slugInput) return;
+
+  // Track whether the user has manually edited the slug so we stop
+  // overwriting it once they've made a deliberate change.
+  let slugEdited = slugInput.value !== '';
+
+  function makeSlug(text) {
+    return text
+      .toLowerCase()
+      .normalize('NFD')                // decompose accented chars
+      .replace(/[\u0300-\u036f]/g, '') // strip combining diacritics
+      .replace(/[^\w\s-]/g, '')        // remove remaining non-word chars
+      .replace(/[\s_]+/g, '-')         // spaces / underscores → hyphens
+      .replace(/-+/g, '-')             // collapse multiple hyphens
+      .replace(/^-|-$/g, '');          // trim leading/trailing hyphens
+  }
+
+  referenceInput.addEventListener('input', function () {
+    if (!slugEdited) {
+      slugInput.value = makeSlug(referenceInput.value);
+    }
+  });
+
+  slugInput.addEventListener('input', function () {
+    // Once the user types in the slug box themselves, stop auto-filling.
+    slugEdited = true;
+  });
+
+  // Allow the slug field to be "unlocked" again when the user clears it.
+  slugInput.addEventListener('change', function () {
+    if (slugInput.value === '') {
+      slugEdited = false;
+    }
+  });
+})();
+</script>
+{% endblock %}
